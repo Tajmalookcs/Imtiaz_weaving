@@ -1,0 +1,71 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}{% if invoice %}Edit {{ invoice.number }}{% elif original %}New debit note{% else %}New invoice{% endif %}{% endblock %}
+{% block content %}
+<header class="page-head">
+  {% if original %}<div><h2>{% if invoice %}Edit debit note {{ invoice.number }}{% else %}New debit note{% endif %}</h2><p class="sub">Against invoice {{ original.number }}, IRN {{ original.fbr_invoice_number }}. Enter the items and amounts for this note, within 180 days of the original.</p></div>
+  {% elif invoice %}<div><h2>Edit invoice {{ invoice.number }}</h2><p class="sub">Save your changes, then approve it to send it to FBR.</p></div>
+  {% else %}<div><h2>New invoice</h2><p class="sub">Invoice {{ next_number }}. Save it here first, then approve it to send it to FBR.</p></div>{% endif %}
+</header>
+{% if can_set_start %}
+<form method="post" action="{% url 'set_start_number' %}" class="start-number" data-loading="Saving">
+  {% csrf_token %}
+  <label class="form-label" for="startNumber">Last invoice number from before this app</label>
+  <div class="start-number-row">
+    <input class="form-control num" id="startNumber" name="last_invoice_number" type="number" min="0" step="1" value="{{ company.last_invoice_number }}">
+    <button class="btn btn-outline-thread" type="submit">Save number</button>
+  </div>
+  <p class="sub small mb-0">New invoices continue after this number. You can change it until the first invoice is saved.</p>
+</form>
+{% endif %}
+{% if not has_products or not customers %}
+<div class="empty">
+  <p class="mb-0">{% if not has_products %}Add a product{% if not customers %} and a customer{% endif %}{% else %}Add a customer{% endif %} before making an invoice.</p>
+  {% if not has_products %}<a class="btn btn-thread" href="{% url 'product_new' %}">Add a product</a>{% else %}<a class="btn btn-thread" href="{% url 'customer_new' %}">Add a customer</a>{% endif %}
+</div>
+{% else %}
+<form method="post" id="invForm" class="invoice-grid" novalidate data-loading="Saving on this computer">
+  {% csrf_token %}
+  <input type="hidden" name="lines" id="linesField">
+  <input type="hidden" name="issued_offline" id="offlineField" value="0">
+  <div class="invoice-main">
+    <div class="row g-3 mb-4">
+      <div class="col-md-8"><label class="form-label" for="buyer">Buyer</label>
+        <select class="form-select" id="buyer" name="customer"><option value="">Choose a buyer</option>
+          {% for c in customers %}<option value="{{ c.pk }}" {% if selected_customer == c.pk|stringformat:"d" %}selected{% endif %}>{{ c.name }} ({{ c.get_kind_display }})</option>{% endfor %}
+        </select></div>
+      <div class="col-md-4"><label class="form-label" for="date">Invoice date</label>
+        <input class="form-control" id="date" name="invoice_date" type="date" value="{{ selected_date|default:today }}">
+        <div id="dateWords" class="date-words" aria-live="polite"></div></div>
+    </div>
+    <p id="exportNote" class="export-note" hidden><i class="bi bi-exclamation-triangle"></i> Export invoices can be saved but not sent yet. FBR's rules for foreign buyers, and the tax shown here, still need to be confirmed.</p>
+    <div id="lines"></div>
+    <button class="btn btn-link add-line" type="button" id="addLine"><i class="bi bi-plus-lg"></i> Add item</button>
+  </div>
+  <aside class="summary">
+    <h3>Invoice total</h3>
+    <dl>
+      <div id="tMtrRow"><dt>Total metres</dt><dd id="tMtr"></dd></div>
+      <div id="tKgRow"><dt>Total weight</dt><dd id="tKg"></dd></div>
+      <div><dt>Value before discount</dt><dd id="tExcl"></dd></div>
+      <div><dt>Discount</dt><dd id="tDisc"></dd></div>
+      <div><dt>Sales tax</dt><dd id="tST"></dd></div>
+      <div><dt>Further tax</dt><dd id="tFT"></dd></div>
+    </dl>
+    <p class="grand"><span>Total</span><strong id="tGrand"></strong></p>
+    <button class="btn btn-thread btn-lg w-100" id="save" type="submit">{% if invoice %}Save changes{% elif original %}Save debit note{% else %}Save invoice{% endif %}</button>
+    <ol class="track" aria-label="What happens next">
+      <li>Saved on this computer</li>
+      <li>Approved by you</li>
+      <li>Checked by FBR</li>
+      <li>IRN received</li>
+    </ol>
+  </aside>
+</form>
+{{ products_data|json_script:"products-data" }}
+{{ customers_data|json_script:"customers-data" }}
+{{ qualities_data|json_script:"qualities-data" }}
+<datalist id="qualityList">{% for q in qualities_data %}<option value="{{ q.quality }}"></option>{% endfor %}</datalist>
+{{ initial_lines|json_script:"initial-lines" }}
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/combobox.js' %}"></script><script src="{% static 'js/invoice.js' %}"></script>{% endblock %}

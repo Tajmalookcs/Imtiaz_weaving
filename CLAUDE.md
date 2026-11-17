@@ -1,0 +1,53 @@
+# Working rules for Claude
+
+These rules were set by the project owner and apply to all work on this project.
+
+## 1. Work locally
+
+- All work happens in the local folder `D:\Imtiaz_Weaving`.
+- Do not create or change project files anywhere else as the final location.
+
+## 2. Push only when told
+
+- Repository: https://github.com/Tajmalookcs/imtiaz_weaving
+- Do not push to GitHub until the owner explicitly asks for it.
+- A previous request to push does not cover later work. Each push needs its own request.
+
+## 3. Plan first, then wait for approval
+
+For every build:
+
+1. Give the owner a plan: what will be built, which files will change, and any decisions needed.
+2. Stop and wait for the owner's approval.
+3. Build only what was approved.
+4. Record the plan and its outcome in `docs/BUILD_PLANS.md`.
+
+If the work needs to go beyond the approved plan, stop and ask first.
+
+## 4. Keep documents accurate
+
+- Project facts go in `docs/PROJECT_BRIEF.md`. Do not fill in details the owner has not confirmed; list them as open questions.
+- Keep the folder structure and status in `README.md` up to date.
+
+## 5. Project layout
+
+- `docs/` holds project documents.
+- `media/` holds client documents. It is ignored by Git and must never be pushed.
+- `reference/` holds official FBR and PRAL documents. Do not edit them.
+
+## 6. Public repository
+
+The repository is public. Never commit tax numbers, CNICs, IP addresses, tokens, passwords, or personal contact details.
+
+## 7. FBR facts
+
+- Never invent FBR API details, tax rates, SROs, HS codes or scenario codes.
+- FBR facts must trace to an official document. If unconfirmed, say so and ask.
+
+## 8. Earlier projects
+
+This project started as a copy of the Aysha Garments app (`D:\aysha_garments`). Never change files in that folder from here.
+
+## 9. No real FBR connection by Claude
+
+Strict rule. Claude must never connect to FBR's real servers, sandbox or production, or test against them. Claude must not ask the owner to run a real FBR test without asking first whether it's a good time and which connection to use, because of the IP address it comes from. Real tests are run only by the owner. Automated and local tests must use a fake server.
